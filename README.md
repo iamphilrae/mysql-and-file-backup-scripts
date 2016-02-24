@@ -24,27 +24,27 @@ The three scripts all contain their own minor configuration settings:
 
 Configuration is set within `file_backup.php`:
 
-* Folder sources (SOURCES_XXX)
-* Destination folder (DEST)
-* Exclusions (EXCLUDE)
+* Folder sources `SOURCES_XXX`
+* Destination folder `DEST`
+* Exclusions `EXCLUDE`
 
 ##### MySQL Databases Backup
 
 Configuration is set within `mysql_backup.php`:
 
-* Database host (DB_HOST - usually *localhost*)
-* Database username (DB_USER)
-* Database password (DB_PASS)
+* Database host `DB_HOST` - usually *localhost*
+* Database username `DB_USER
+* Database password `DB_PASS`
 
 ##### Push to AWS S3
 
 Configuration is set within `config/push_to_s3.php`:
 
-* Server account username (server_account)
-* AWS Access Key (access_key)
-* AWS Access Secret (access_secret)
-* AWS Bucket to store the backups in (backup bucket)
-* Folder within the AWS bucket to store backups (backup_folder)
+* Server account username `server_account`
+* AWS Access Key `access_key`
+* AWS Access Secret `access_secret`
+* AWS Bucket to store the backups in `backup bucket`
+* Folder within the AWS bucket to store backups `backup_folder`
 
 
 ## Usage
@@ -87,17 +87,22 @@ As daily and monthly files will eventually consist of the same filename (e.g. 30
 
 An entire directory (as specified) of a web server will be backed up as a four ZIP files. The default configuration is to backup the *public_html* folder. These four files will be saved upon each execution of the script:
 
-**Latest backup named after username and overwritten daily**
+###### Latest backup named after username and overwritten daily
+
 `hostname__FILES__latest__username__directory.tar.gz`
 
-**Daily backups named after days of the month and rotated monthly**
+###### Daily backups named after days of the month and rotated monthly
+
 `hostname__FILES__daily-DD__username__directory.tar.gz`
 
-**Monthly backups named after days of the month and rotated yearly**
+###### Monthly backups named after days of the month and rotated yearly
+
 `hostname__FILES__monthly-MM__username__directory.tar.gz`
 
-**Yearly backups named after year and never rotated**
+###### Yearly backups named after year and never rotated
+
 `hostname__FILES__yearly-YYYY__username__directory.tar.gz`
+
 *(Note: will always be the latest backup until 31st December)*
 
 
@@ -105,17 +110,22 @@ An entire directory (as specified) of a web server will be backed up as a four Z
 
 All databases for a particular database account will be backed up as a four ZIP files. These four files will be saved upon each execution of the script:
 
-**Latest backup named after username and overwritten daily**
+###### Latest backup named after username and overwritten daily
+
 `hostname__MYSQL__latest__username__database.tar.gz`
 
-**Daily backups named after days of the month and rotated monthly**
+###### Daily backups named after days of the month and rotated monthly
+
 `hostname__MYSQL__daily-DD__username__database.tar.gz`
 
-**Monthly backups named after days of the month and rotated yearly**
+###### Monthly backups named after days of the month and rotated yearly
+
 `hostname__MYSQL__monthly-MM__username__database.tar.gz`
 
-**Yearly backups named after year and never rotated**
+###### Yearly backups named after year and never rotated
+
 `hostname__MYSQL__yearly-YYYY__username__database.tar.gz`
+
 *(Note: will always be the latest backup until 31st December)*
 
 
