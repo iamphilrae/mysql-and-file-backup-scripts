@@ -12,7 +12,7 @@ DB_PASS="DATABASE_PASSWORD_HERE"
 
 
 
- 
+
 ###################
 #
 # Database Backup Script
@@ -72,7 +72,7 @@ DB_PASS="DATABASE_PASSWORD_HERE"
 
 
 ###################
-# 
+#
 # VARIABLES
 #
 
@@ -86,7 +86,7 @@ EXCLUDE="test information_schema"
 
 NOW="$(date +"%Y-%m-%d %T")"
 
-                                        
+
 
 
 
@@ -94,7 +94,7 @@ NOW="$(date +"%Y-%m-%d %T")"
 #
 # SCRIPT EXECUTION
 #
-# The main archiving function, result are tarred gzipped 
+# The main archiving function, result are tarred gzipped
 # archives with permissions intact
 #
 #
@@ -122,7 +122,7 @@ GZIP="$(which gzip)"
 
 
 
-# 
+#
 # Check that directories are writable
 #
 if [ ! -w $DEST ]; then
@@ -131,7 +131,7 @@ if [ ! -w $DEST ]; then
   exit 1
 fi
 
-umask 077   
+umask 077
 
 
 
@@ -154,28 +154,29 @@ do
 		  [ "$DB" == "$i" ] && skipdb=1 || :
 		done
 	fi
-	
-	if [ "$skipdb" == "-1" ] ; 
-	then		
-		
+
+	if [ "$skipdb" == "-1" ] ;
+	then
+
 		FILE_PREFIX="${HOSTNAME//./-}__MYSQL__"
 		FILE_POSTFIX="__${LOGNAME}__${DB}.sql.gz"
-		
+
 		FILENAME_LATEST="${FILE_PREFIX}latest${FILE_POSTFIX}"
 		FILENAME_DAILY="${FILE_PREFIX}daily-$(date +%d)${FILE_POSTFIX}"
 		FILENAME_MONTHLY="${FILE_PREFIX}monthly-$(date +%m)${FILE_POSTFIX}"
 		FILENAME_YEARLY="${FILE_PREFIX}yearly-$(date +%Y)${FILE_POSTFIX}"
-		
-	
+
+
 		$MYSQLDUMP -u $DB_USER -h $DB_HOST -p$DB_PASS $DB | $GZIP -9 > ${DEST}/${FILENAME_LATEST}
-		$MYSQLDUMP -u $DB_USER -h $DB_HOST -p$DB_PASS $DB | $GZIP -9 > ${DEST}/${FILENAME_DAILY}
-		$MYSQLDUMP -u $DB_USER -h $DB_HOST -p$DB_PASS $DB | $GZIP -9 > ${DEST}/${FILENAME_MONTHLY}
-		$MYSQLDUMP -u $DB_USER -h $DB_HOST -p$DB_PASS $DB | $GZIP -9 > ${DEST}/${FILENAME_YEARLY}
-		
+
+    cp ${DEST}/${FILENAME_LATEST} ${DEST}/${FILENAME_DAILY}
+    cp ${DEST}/${FILENAME_LATEST} ${DEST}/${FILENAME_MONTHLY}
+    cp ${DEST}/${FILENAME_LATEST} ${DEST}/${FILENAME_YEARLY}
+
 		echo Backed up: $DB
 
 	else
-	
+
 		echo Skipping: $DB
 
 	fi
@@ -184,7 +185,7 @@ done
 
 
 echo
-echo "Backup complete!" 
+echo "Backup complete!"
 echo "Backup location: $S3_BUCKET"
 echo
 echo "__________________________________________"

@@ -50,6 +50,10 @@
 
 ###################
 #
+# v2
+# -----
+# Changed method by which non-latest archives are generated.
+#
 # v1
 # -----
 # Initial release.
@@ -59,32 +63,15 @@
 
 
 ###################
-# 
+#
 # VARIABLES
 #
 #
 
-SCRIPT_VERSION="v1"
+SCRIPT_VERSION="v2"
 
-SOURCES_LATEST="${HOME}/public_html"
+SOURCES="${HOME}/public_html"
 # backups named after host+directory and overwritten daily
-# e.g. latest__username-server__source.tar.gz
-
-SOURCES_DAILY="${HOME}/public_html"
-# backups named after days of the month and rotated monthly
-# e.g. daily_10__username_hostname__source.tar.gz
-# e.g. daily_11__username_hostname__source.tar.gz
-
-SOURCES_MONTHLY="${HOME}/public_html"
-# backups named after days of the month and rotated yearly
-# e.g. monthly_Apr__username_hostname__source.tar.gz
-# e.g. monthly_May__username_hostname__source.tar.gz
-
-SOURCES_YEARLY="${HOME}/public_html"
-# backups named after year and never rotated
-# note will always equal the latest backup until 31st December
-# e.g. yearly_2011__username_hostname__source.tar.gz
-# e.g. yearly_2012__username_hostname__source.tar.gz
 
 
 DEST="${HOME}/backups"
@@ -96,7 +83,7 @@ EXCLUDE="--exclude=*.cache --exclude=__MACOSX --exclude=.DS_Store"
 # files to exclude from backups, include flags
 
 NOW="$(date +"%Y-%m-%d %T")"
-                                        
+
 
 
 
@@ -104,7 +91,7 @@ NOW="$(date +"%Y-%m-%d %T")"
 #
 # SCRIPT EXECUTION
 #
-# The main archiving function, result are tarred gzipped 
+# The main archiving function, result are tarred gzipped
 # archives with permissions intact
 #
 #
@@ -123,7 +110,7 @@ TARPATH="/bin/gtar"
 EXTRAFLAGS=""
 
 
-# 
+#
 # Check for whether script executor is root and warn if not
 #
 USER=$(id | grep root | wc -l)
@@ -134,7 +121,7 @@ if [ $USER -eq 0 ]; then
 fi
 
 
-# 
+#
 # Check that directories are writable
 #
 if [ ! -w $DEST ]; then
@@ -143,86 +130,53 @@ if [ ! -w $DEST ]; then
   exit 1
 fi
 
-umask 077   
+umask 077
 
 
 #
 # Main archive function
 #
-tarit() 
-{	
+tarit()
+{
 	FILE_PREFIX="${HOSTNAME//./-}__FILES__"
+	FILE_POSTFIX="__${LOGNAME}__${SOURCESAFE}"
 
-	FILENAME="${FILE_PREFIX}${PERIOD}${DATE}__${LOGNAME}__${SOURCESAFE}"
+  FILENAME_LATEST="${FILE_PREFIX}latest${FILE_POSTFIX}.tar.gz"
+  FILENAME_DAILY="${FILE_PREFIX}daily-$(date +%d)${FILE_POSTFIX}.tar.gz"
+  FILENAME_MONTHLY="${FILE_PREFIX}monthly-$(date +%m)${FILE_POSTFIX}.tar.gz"
+  FILENAME_YEARLY="${FILE_PREFIX}yearly-$(date +%Y)${FILE_POSTFIX}.tar.gz"
+
 
 	$TARPATH --create --one-file-system  --same-permissions \
   	$EXCLUDE $EXTRAFLAGS --totals  --gzip $SOURCE  \
-  	--file=$DEST/$FILENAME.tar.gz 2>&1 | logger -t "$MYSCRIPT: $SOURCESAFE"
+  	--file=$DEST/$FILENAME_LATEST 2>&1 | logger -t "$MYSCRIPT: $SOURCESAFE"
 
-  echo "Saved: $DEST/$FILENAME.tar.gz"
+
+  cp ${DEST}/${FILENAME_LATEST} ${DEST}/${FILENAME_DAILY}
+  cp ${DEST}/${FILENAME_LATEST} ${DEST}/${FILENAME_MONTHLY}
+  cp ${DEST}/${FILENAME_LATEST} ${DEST}/${FILENAME_YEARLY}
+
+
+  echo "Saved: $DEST/$FILENAME_LATEST"
 }
 
 
 # Loop through latest archive sources
-for SOURCE in $SOURCES_LATEST
+for SOURCE in $SOURCES
 do
 	if [ -d $SOURCE ]; then
 		PERIOD="latest"
 	  SOURCESAFE="$(basename $SOURCE)"
 	  tarit
-	
+
 	else
 	  echo "$SOURCE not found, skipping"
 	fi
 done
 
-
-# Loop through daily archive sources
-for SOURCE in $SOURCES_DAILY
-do
-	if [ -d $SOURCE ]; then
-		PERIOD="daily"
-	  SOURCESAFE="$(basename $SOURCE)"
-	  DATE="-$(date +%d)"
-	  tarit
-	
-	else
-	  echo "$SOURCE not found, skipping"
-	fi
-done
-
-
-# Loop through monthly archive sources
-for SOURCE in $SOURCES_MONTHLY
-do
-	if [ -d $SOURCE ]; then
-		PERIOD="monthly"
-	  SOURCESAFE=$(basename $SOURCE)
-	  DATE="-$(date +%m)"
-	  tarit
-	
-	else
-	  echo "$SOURCE not found, skipping"
-	fi
-done
-
-
-# Loop through yearly archive sources
-for SOURCE in $SOURCES_YEARLY
-do
-	if [ -d $SOURCE ]; then
-		PERIOD="yearly"
-	  SOURCESAFE=$(basename $SOURCE)
-	  DATE="-$(date +%Y)"
-	  tarit
-	
-	else
-	  echo "$SOURCE not found, skipping"
-	fi
-done
 
 echo
-echo "Backup complete!" 
+echo "Backup complete!"
 echo "Backup location: $DEST"
 echo
 echo "__________________________________________"
