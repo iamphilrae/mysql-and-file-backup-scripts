@@ -29,17 +29,17 @@ DB_PASS="DATABASE_PASSWORD_HERE"
 # FILE SAVING LOGIC
 #
 # Latest backup named after username and overwritten daily
-# e.g. hostname__MYSQL__latest__username__database.tar.gz
+# e.g. hostname__MYSQL__latest__database.tar.gz
 #
 # Daily backups named after days of the month and rotated monthly
-# e.g. hostname__MYSQL__daily-DD__username__database.tar.gz
+# e.g. hostname__MYSQL__daily-DD__database.tar.gz
 #
 # Monthly backups named after days of the month and rotated yearly
-# e.g. hostname__MYSQL__monthly-MM__username__database.tar.gz
+# e.g. hostname__MYSQL__monthly-MM__database.tar.gz
 #
 # Yearly backups named after year and never rotated
 # note will always equal the latest backup until 31st December
-# e.g. hostname__MYSQL__yearly-YYYY__username__database.tar.gz
+# e.g. hostname__MYSQL__yearly-YYYY__database.tar.gz
 #
 #
 #
@@ -100,9 +100,6 @@ NOW="$(date +"%Y-%m-%d %T")"
 #
 echo
 echo
-echo "=========================================="
-echo "------------------------------------------"
-echo
 echo "Beginning MySQL Backup Script $SCRIPT_VERSION"
 echo "$NOW"
 echo
@@ -159,19 +156,21 @@ do
 	then
 
 		FILE_PREFIX="${HOSTNAME//./-}__MYSQL__"
-		FILE_POSTFIX="__${LOGNAME}__${DB}.sql.gz"
+		FILE_POSTFIX="__${DB}.sql.gz"
 
 		FILENAME_LATEST="${FILE_PREFIX}latest${FILE_POSTFIX}"
 		FILENAME_DAILY="${FILE_PREFIX}daily-$(date +%d)${FILE_POSTFIX}"
+		FILENAME_WEEKLY="${FILE_PREFIX}weekly-$(date +%V)${FILE_POSTFIX}"
 		FILENAME_MONTHLY="${FILE_PREFIX}monthly-$(date +%m)${FILE_POSTFIX}"
 		FILENAME_YEARLY="${FILE_PREFIX}yearly-$(date +%Y)${FILE_POSTFIX}"
 
 
 		$MYSQLDUMP -u $DB_USER -h $DB_HOST -p$DB_PASS $DB | $GZIP -9 > ${DEST}/${FILENAME_LATEST}
 
-    cp ${DEST}/${FILENAME_LATEST} ${DEST}/${FILENAME_DAILY}
-    cp ${DEST}/${FILENAME_LATEST} ${DEST}/${FILENAME_MONTHLY}
-    cp ${DEST}/${FILENAME_LATEST} ${DEST}/${FILENAME_YEARLY}
+		cp ${DEST}/${FILENAME_LATEST} ${DEST}/${FILENAME_DAILY}
+		cp ${DEST}/${FILENAME_LATEST} ${DEST}/${FILENAME_WEEKLY}
+		cp ${DEST}/${FILENAME_LATEST} ${DEST}/${FILENAME_MONTHLY}
+		cp ${DEST}/${FILENAME_LATEST} ${DEST}/${FILENAME_YEARLY}
 
 		echo Backed up: $DB
 
@@ -186,9 +185,6 @@ done
 
 echo
 echo "Backup complete!"
-echo "Backup location: $S3_BUCKET"
-echo
-echo "__________________________________________"
-echo "=========================================="
+echo "Backup location: $DEST"
 echo
 echo

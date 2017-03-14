@@ -14,17 +14,20 @@
 # FILE SAVING LOGIC
 #
 # Latest backup named after username and overwritten daily
-# e.g. hostname__FILES__latest__username__directory.tar.gz
+# e.g. hostname__FILES__latest__directory.tar.gz
 #
 # Daily backups named after days of the month and rotated monthly
-# e.g. hostname__FILES__daily-DD__username__directory.tar.gz
+# e.g. hostname__FILES__daily-DD__directory.tar.gz
+#
+# Weekly backups named after days of the month and rotated yearly
+# e.g. hostname__FILES__weekly-DD__directory.tar.gz
 #
 # Monthly backups named after days of the month and rotated yearly
-# e.g. hostname__FILES__monthly-MM__username__directory.tar.gz
+# e.g. hostname__FILES__monthly-MM__directory.tar.gz
 #
 # Yearly backups named after year and never rotated
 # note will always equal the latest backup until 31st December
-# e.g. hostname__FILES__yearly-YYYY__username__directory.tar.gz
+# e.g. hostname__FILES__yearly-YYYY__directory.tar.gz
 #
 #
 #
@@ -42,7 +45,7 @@
 #
 #
 # Author:
-# Phil Rae, https://github.com/iamphilrae
+# Phil Rae, http://philr.ae
 #
 ##
 
@@ -97,9 +100,6 @@ NOW="$(date +"%Y-%m-%d %T")"
 #
 echo
 echo
-echo "=========================================="
-echo "------------------------------------------"
-echo
 echo "Beginning File Backup Script $SCRIPT_VERSION"
 echo "$NOW"
 echo
@@ -138,11 +138,12 @@ umask 077
 #
 tarit()
 {
-	FILE_PREFIX="${HOSTNAME//./-}__FILES__"
-	FILE_POSTFIX="__${LOGNAME}__${SOURCESAFE}"
+  FILE_PREFIX="${HOSTNAME//./-}__FILES__"
+	FILE_POSTFIX="__${SOURCESAFE}"
 
   FILENAME_LATEST="${FILE_PREFIX}latest${FILE_POSTFIX}.tar.gz"
   FILENAME_DAILY="${FILE_PREFIX}daily-$(date +%d)${FILE_POSTFIX}.tar.gz"
+  FILENAME_WEEKLY="${FILE_PREFIX}weekly-$(date +%V)${FILE_POSTFIX}.tar.gz"
   FILENAME_MONTHLY="${FILE_PREFIX}monthly-$(date +%m)${FILE_POSTFIX}.tar.gz"
   FILENAME_YEARLY="${FILE_PREFIX}yearly-$(date +%Y)${FILE_POSTFIX}.tar.gz"
 
@@ -153,6 +154,7 @@ tarit()
 
 
   cp ${DEST}/${FILENAME_LATEST} ${DEST}/${FILENAME_DAILY}
+  cp ${DEST}/${FILENAME_LATEST} ${DEST}/${FILENAME_WEEKLY}
   cp ${DEST}/${FILENAME_LATEST} ${DEST}/${FILENAME_MONTHLY}
   cp ${DEST}/${FILENAME_LATEST} ${DEST}/${FILENAME_YEARLY}
 
@@ -178,8 +180,5 @@ done
 echo
 echo "Backup complete!"
 echo "Backup location: $DEST"
-echo
-echo "__________________________________________"
-echo "=========================================="
 echo
 echo
